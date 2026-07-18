@@ -1,0 +1,11 @@
+# .gitignore
+
+# Python e Django
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+venv/
+
+# Mac OS
+.DS_Store

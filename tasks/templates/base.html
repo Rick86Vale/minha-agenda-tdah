@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda TDAH</title>
+    <!-- CSS e JS Globais -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        nav { background: #2d3436; padding: 15px; color: white; display: flex; gap: 20px; }
+        nav a { color: white; text-decoration: none; font-weight: bold; }
+        .container { max-width: 95%; margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'calendar' %}">Dashboard</a>
+        <a href="{% url 'task_create' %}">Criar Tarefa</a>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

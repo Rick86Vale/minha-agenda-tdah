@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
+    .box { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 70vh; overflow-y: auto; }
+    #calendar { height: 70vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+</style>
+
+<div class="dashboard-grid">
+    <!-- Esquerda: Histórico -->
+    <div class="box">
+        <h3>Histórico</h3>
+        {% for task in history_tasks %}
+            <div style="margin-bottom: 10px; font-size: 0.9em;">
+                {{ task.title }} - {{ task.status|yesno:"✅,❌" }}
+            </div>
+        {% endfor %}
+        {% if history_tasks.has_other_pages %}
+            <a href="?page_left={{ history_tasks.previous_page_number }}">« Ant</a> |
+            <a href="?page_left={{ history_tasks.next_page_number }}">Pró »</a>
+        {% endif %}
+    </div>
+
+    <!-- Centro: Calendário -->
+    <div id='calendar'></div>
+
+    <!-- Direita: Próximas -->
+    <div class="box">
+        <h3>Próximas</h3>
+        {% for task in next_tasks %}
+            <div style="margin-bottom: 15px; border-bottom: 1px solid #eee;">
+                <strong>{{ task.title }}</strong><br>
+                <small>{{ task.start_time|date:"d/m H:i" }}</small>
+                <form action="{% url 'complete_task' task.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" style="cursor: pointer;">OK</button>
+                </form>
+            </div>
+        {% endfor %}
+        {% if next_tasks.has_other_pages %}
+            <a href="?page_right={{ next_tasks.previous_page_number }}">« Ant</a> |
+            <a href="?page_right={{ next_tasks.next_page_number }}">Pró »</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: '/api/tasks/',
+            height: '100%'
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}
