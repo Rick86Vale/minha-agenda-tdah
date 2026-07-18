@@ -4,10 +4,26 @@
 <style>
     .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
     .box { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 70vh; overflow-y: auto; }
-    /* Ajuste para o container do centro para acomodar o relógio e o calendário */
     .center-column { display: flex; flex-direction: column; gap: 10px; }
-    #relogio { font-family: monospace; font-size: 1.5em; color: #333; text-align: center; padding: 10px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    #calendar { height: 60vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    
+    /* Relógio Dark */
+    #relogio { 
+        font-family: monospace; font-size: 1.8em; color: #10ac84; text-align: center; 
+        padding: 15px; background: #000; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+    }
+    
+    /* Calendário menor */
+    #calendar { height: 40vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    
+    /* Classes de Status */
+    .status-badge { font-size: 0.8em; padding: 2px 8px; border-radius: 4px; color: white; display: inline-block; font-weight: bold; }
+    .bg-nao_iniciado { background-color: #95a5a6; }
+    .bg-iniciado      { background-color: #3498db; }
+    .bg-pendente      { background-color: #e67e22; }
+    .bg-concluido     { background-color: #10ac84; }
+    .bg-atrasado      { background-color: #ff4343; }
+    
+    .legenda-box { height: auto; padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85em; }
 </style>
 
 <div class="dashboard-grid">
@@ -15,10 +31,12 @@
     <div class="box">
         <h3>Histórico</h3>
         {% for task in history_tasks %}
-            <div style="margin-bottom: 10px; font-size: 0.9em;">
-            <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
-                {{ task.title }} - {{ task.status|yesno:"✅,❌" }}
-            </a>
+            <div style="margin-bottom: 15px; font-size: 0.9em; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
+                    <strong>{{ task.title }}</strong>
+                </a><br>
+                <small>Fim: {{ task.due_date|date:"d/m H:i" }}</small><br>
+                <span class="status-badge bg-{{ task.get_status }}">{{ task.get_status|title|cut:"_" }}</span>
             </div>
         {% endfor %}
         {% if history_tasks.has_other_pages %}
@@ -27,23 +45,31 @@
         {% endif %}
     </div>
 
-    <!-- Centro: Relógio + Calendário -->
+    <!-- Centro: Relógio + Calendário + Legenda -->
     <div class="center-column">
         <div id="relogio">--:--:--</div>
         <div id='calendar'></div>
+        
+        <div class="box legenda-box">
+            <span><span class="status-badge bg-nao_iniciado">N/I</span> Não Iniciado</span>
+            <span><span class="status-badge bg-iniciado">Ini</span> Iniciado</span>
+            <span><span class="status-badge bg-pendente">Pen</span> Pendente</span>
+            <span><span class="status-badge bg-concluido">Con</span> Concluído</span>
+            <span><span class="status-badge bg-atrasado">Atr</span> Atrasado</span>
+        </div>
     </div>
 
     <!-- Direita: Próximas -->
     <div class="box">
         <h3>Próximas</h3>
         {% for task in next_tasks %}
-            <div style="margin-bottom: 15px; border-bottom: 1px solid #eee;">
+            <div style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
                 <strong>{{ task.title }}</strong><br>
-                <small>{{ task.start_time|date:"d/m H:i" }}</small>
-                <form action="{% url 'complete_task' task.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" style="cursor: pointer;">OK</button>
-                </form>
+                </a>
+                <small>Início: {{ task.start_time|date:"d/m H:i" }}</small><br>
+                <span class="status-badge bg-{{ task.get_status }}">{{ task.get_status|title|cut:"_" }}</span>
+                <!-- Formulário de concluir removido -->
             </div>
         {% endfor %}
         {% if next_tasks.has_other_pages %}
@@ -54,7 +80,6 @@
 </div>
 
 <script>
-    // Relógio
     function atualizarRelogio() {
         const agora = new Date();
         document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
@@ -62,7 +87,6 @@
     setInterval(atualizarRelogio, 1000);
     atualizarRelogio();
 
-    // Calendário
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {

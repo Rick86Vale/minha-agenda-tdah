@@ -1,19 +1,79 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="box" style="max-width: 600px; margin: 0 auto; height: auto;">
-    <h2>{{ task.title }}</h2>
-    <p><strong>Início:</strong> {{ task.start_time|date:"d/m/Y H:i" }}</p>
-    <p><strong>Prazo:</strong> {{ task.due_date|date:"d/m/Y H:i" }}</p>
-    <p><strong>Status:</strong> {{ task.status|yesno:"Concluída,Pendente" }}</p>
-    <p><strong>Descrição:</strong> {{ task.description|default:"Sem descrição." }}</p>
+<style>
+    .detail-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    h2 { color: #333; margin-bottom: 25px; border-bottom: 2px solid #f4f4f4; padding-bottom: 10px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .info-item p { margin: 5px 0; color: #666; }
+    .info-item strong { color: #333; display: block; font-size: 0.9em; }
+    
+    .desc-area { margin-top: 25px; padding-top: 15px; border-top: 1px solid #f4f4f4; margin-bottom: 20px; }
+    
+    /* Botões */
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9em; transition: 0.3s; border: none; cursor: pointer; }
+    
+    .btn-start { background: #3498db; color: white; }
+    .btn-start:hover { background: #2980b9; }
+    .btn-finish { background: #10ac84; color: white; }
+    .btn-finish:hover { background: #0c8c6a; }
+    
+    .btn-primary { background: #3498db; color: white; }
+    .btn-danger { background: #e74c3c; color: white; }
+    .btn-back { background: #f8f9fa; color: #555; border: 1px solid #ddd; }
+</style>
 
-    <div style="margin-top: 20px;">
-        <div style="margin-top: 20px;">
-            <a href="{% url 'calendar' %}">Voltar</a>
-            <a href="{% url 'task_update' task.id %}">Editar</a>
-            <a href="{% url 'task_delete' task.id %}">Excluir</a>
+<div class="detail-container">
+    <h2>{{ task.title }}</h2>
+    
+    <div class="info-grid">
+        <div class="info-item">
+            <strong>Início</strong>
+            <p>{{ task.start_time|date:"d/m/Y H:i" }}</p>
         </div>
+        <div class="info-item">
+            <strong>Prazo</strong>
+            <p>{{ task.due_date|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+    
+    <div class="info-item">
+        <strong>Status</strong>
+        <p style="text-transform: capitalize;">{{ task.get_status|cut:"_" }}</p>
+    </div>
+
+    <div class="desc-area">
+        <strong>Descrição</strong>
+        <p>{{ task.description|default:"Sem descrição definida."|linebreaks }}</p>
+    </div>
+
+    <!-- Novas Ações de Status -->
+    <div class="actions">
+        {% if task.get_status != 'concluido' %}
+            <form action="{% url 'start_task' task.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-start">Iniciar</button>
+            </form>
+            <form action="{% url 'complete_task' task.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-finish">Concluir</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Ações de Gerenciamento -->
+    <div class="actions" style="border-top: 1px solid #f4f4f4; padding-top: 20px;">
+        <a href="{% url 'calendar' %}" class="btn btn-back">Voltar</a>
+        <a href="{% url 'task_update' task.id %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Excluir</a>
     </div>
 </div>
 {% endblock %}

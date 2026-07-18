@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.db import models
 from .models import Task
 from .forms import TaskForm
 
@@ -22,12 +23,18 @@ def task_create(request):
 def calendar_view(request):
     now = timezone.now()
     
-    # Histórico (Esquerda): Passadas ou Concluídas
-    past = Task.objects.filter(start_time__lt=now).order_by('-start_time')
+    # Histórico: Tudo o que está concluído OU o que já passou do prazo
+    past = Task.objects.filter(
+        models.Q(status='concluido') | models.Q(due_date__lt=now)
+    ).order_by('-due_date')
+    
     history_tasks = Paginator(past, 10).get_page(request.GET.get('page_left'))
     
-    # Próximas (Direita): Futuras e Pendentes
-    future = Task.objects.filter(start_time__gte=now, status=False).order_by('start_time')
+    # Próximas: Apenas o que NÃO está concluído e ainda está no futuro
+    future = Task.objects.exclude(status='concluido').filter(
+        due_date__gte=now
+    ).order_by('due_date')
+    
     next_tasks = Paginator(future, 10).get_page(request.GET.get('page_right'))
     
     return render(request, 'tasks/calendar.html', {
@@ -37,16 +44,37 @@ def calendar_view(request):
 
 # 3. LÓGICA DE EXECUÇÃO DE TAREFAS
 @require_POST
+def start_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.status = 'iniciado'
+    task.save()
+    return redirect('task_detail', task_id=task_id) 
+
+@require_POST
 def complete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    task.status = True
+    task.status = 'concluido'
     task.save()
     return redirect('calendar')
 
 # 4. API PARA O FULLCALENDAR
 def task_data(request):
+    # Mapeamento de status para as cores CSS que definimos
+    color_map = {
+        'nao_iniciado': '#95a5a6',
+        'iniciado': '#3498db',
+        'pendente': '#e67e22',
+        'concluido': '#10ac84',
+        'atrasado': '#ff4343'
+    }
+    
     return JsonResponse([
-        {'title': t.title, 'start': t.start_time.isoformat(), 'end': t.due_date.isoformat(), 'color': "#ff4343" if t.priority == 'H' else '#10ac84'}
+        {
+            'title': t.title, 
+            'start': t.start_time.isoformat(), 
+            'end': t.due_date.isoformat(), 
+            'color': color_map.get(t.get_status(), '#95a5a6') # Pega a cor ou usa cinza como padrão
+        }
         for t in Task.objects.all()
     ], safe=False)
 

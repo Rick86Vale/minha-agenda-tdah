@@ -1,11 +1,60 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="box">
-    <h2>{% if form.instance.pk %}Editar{% else %}Criar{% endif %} Tarefa</h2>
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    h2 { margin-bottom: 25px; color: #333; font-weight: 600; text-align: center; }
+    
+    /* Estilização dos campos */
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 500; color: #555; }
+    input, select, textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+    input:focus { border-color: #3498db; outline: none; }
+    
+    /* Botão moderno */
+    button {
+        width: 100%;
+        padding: 14px;
+        background-color: #10ac84;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    button:hover { background-color: #0c8c6a; }
+</style>
+
+<div class="form-container">
+    <h2>{% if form.instance.pk %}Editar Tarefa{% else %}Nova Tarefa{% endif %}</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
+        
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit">Salvar Alterações</button>
     </form>
 </div>
 {% endblock %}
