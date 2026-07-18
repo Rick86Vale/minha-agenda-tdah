@@ -1,19 +1,11 @@
-<!-- tasks/templates/tasks/task_form.html -->
 {% extends 'base.html' %}
-
 {% block content %}
-    <h2 style="color: #2d3436;">Criar Nova Tarefa</h2>
-    
-    <form method="post" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+<div class="box">
+    <h2>{% if form.instance.pk %}Editar{% else %}Criar{% endif %} Tarefa</h2>
+    <form method="post">
         {% csrf_token %}
-        
-        <!-- Renderizando os campos -->
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            {{ form.as_p }}
-        </div>
-
-        <button type="submit" style="margin-top: 20px; background: #0984e3; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-size: 16px;">
-            Salvar Tarefa
-        </button>
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
     </form>
+</div>
 {% endblock %}

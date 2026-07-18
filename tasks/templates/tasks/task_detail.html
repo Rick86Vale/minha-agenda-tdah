@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="box" style="max-width: 600px; margin: 0 auto; height: auto;">
+    <h2>{{ task.title }}</h2>
+    <p><strong>Início:</strong> {{ task.start_time|date:"d/m/Y H:i" }}</p>
+    <p><strong>Prazo:</strong> {{ task.due_date|date:"d/m/Y H:i" }}</p>
+    <p><strong>Status:</strong> {{ task.status|yesno:"Concluída,Pendente" }}</p>
+    <p><strong>Descrição:</strong> {{ task.description|default:"Sem descrição." }}</p>
+
+    <div style="margin-top: 20px;">
+        <div style="margin-top: 20px;">
+            <a href="{% url 'calendar' %}">Voltar</a>
+            <a href="{% url 'task_update' task.id %}">Editar</a>
+            <a href="{% url 'task_delete' task.id %}">Excluir</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

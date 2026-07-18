@@ -4,7 +4,10 @@
 <style>
     .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
     .box { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: 70vh; overflow-y: auto; }
-    #calendar { height: 70vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    /* Ajuste para o container do centro para acomodar o relógio e o calendário */
+    .center-column { display: flex; flex-direction: column; gap: 10px; }
+    #relogio { font-family: monospace; font-size: 1.5em; color: #333; text-align: center; padding: 10px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    #calendar { height: 60vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 </style>
 
 <div class="dashboard-grid">
@@ -13,7 +16,9 @@
         <h3>Histórico</h3>
         {% for task in history_tasks %}
             <div style="margin-bottom: 10px; font-size: 0.9em;">
+            <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
                 {{ task.title }} - {{ task.status|yesno:"✅,❌" }}
+            </a>
             </div>
         {% endfor %}
         {% if history_tasks.has_other_pages %}
@@ -22,8 +27,11 @@
         {% endif %}
     </div>
 
-    <!-- Centro: Calendário -->
-    <div id='calendar'></div>
+    <!-- Centro: Relógio + Calendário -->
+    <div class="center-column">
+        <div id="relogio">--:--:--</div>
+        <div id='calendar'></div>
+    </div>
 
     <!-- Direita: Próximas -->
     <div class="box">
@@ -46,6 +54,15 @@
 </div>
 
 <script>
+    // Relógio
+    function atualizarRelogio() {
+        const agora = new Date();
+        document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+    }
+    setInterval(atualizarRelogio, 1000);
+    atualizarRelogio();
+
+    // Calendário
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
