@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .list-container { max-width: 600px; margin: 40px auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .month-section { margin-top: 25px; }
+    .month-title { color: #3498db; font-size: 1.2em; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-bottom: 10px; }
+    .holiday-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
+    .icon { font-size: 1.5em; margin-right: 15px; }
+    .date-text { font-family: monospace; font-weight: bold; width: 80px; }
+</style>
+
+<div class="list-container">
+    <h2>🗓️ Feriados 2026</h2>
+
+    {% for month, month_holidays in holidays %}
+        <div class="month-section">
+            <div class="month-title">{{ month }}</div>
+            {% for date, name in month_holidays %}
+                <div class="holiday-row">
+                    <span class="icon">
+                        {% if "Confraternização" in name %}🎉{% elif "Carnaval" in name %}🎭{% elif "Independência" in name %}🇧🇷{% elif "Natal" in name %}🎄{% else %}📅{% endif %}
+                    </span>
+                    <span class="date-text">{{ date|date:"d/m" }}</span>
+                    <span>{{ name }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'calendar' %}" style="text-decoration: none; color: #3498db; font-weight: bold;">← Voltar ao Calendário</a>
+    </div>
+</div>
+{% endblock %}

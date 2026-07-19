@@ -114,17 +114,17 @@
             initialView: 'dayGridMonth',
             height: '100%',
             eventSources: [
-                {
-                    url: '/api/tasks/', // Busca suas tarefas
-                    color: '#3498db'
-                },
-                {
-                    url: '/api/feriados/', // Busca os feriados da nossa nova API
-                    display: 'background',
-                    backgroundColor: '#ff7675'
-                }
-            ]
-        });
+            {
+                url: '/api/tasks/',
+                color: '#3498db'
+            },
+            {
+                url: '/api/feriados/',
+                display: 'background',
+                backgroundColor: '#ff7675'
+            }
+        ]
+    });    
         
         calendar.render();
     });

@@ -11,9 +11,10 @@ from .forms import TaskForm
 from datetime import timedelta 
 
 import datetime
-# biblioteca de feriados nacionais
+# feriados 
 import holidays
-
+from itertools import groupby
+from operator import itemgetter
 
 # 1. CRIAÇÃO DE TAREFAS
 def task_create(request):
@@ -73,7 +74,7 @@ def complete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     task.status = 'concluido'
     task.save()
-    return redirect('c  ndar')
+    return redirect('calendar')
 
 # 4. API PARA O FULLCALENDAR
 def task_data(request):
@@ -172,14 +173,21 @@ def holiday_api(request):
             'title': name,
             'start': date.strftime('%Y-%m-%d'),
             'allDay': True,
-            'display': 'background', # Feriado fica como uma faixa no fundo
-            'backgroundColor': '#ff7675' # Vermelho claro
+            'display': 'background', # Feriado como faixa de fundo
+            'backgroundColor': '#ff7675'
         })
     
-    eventos.append({
-    'title': name,
-    'start': date.strftime('%Y-%m-%d'),
-    'allDay': True,
-    'display': 'block',  # Mude de 'background' para 'block' para testar
-    'backgroundColor': '#ff0000' # Vermelho bem forte
-})
+    return JsonResponse(eventos, safe=False)
+
+def holiday_list(request):
+    br_holidays = holidays.Brazil(years=2026)
+    # Lista de tuplas (data, nome)
+    holiday_data = sorted(br_holidays.items())
+    
+    # Agrupa por mês (usando o mês da data como chave)
+    # A função lambda extrai o mês da data
+    grouped_holidays = []
+    for month, group in groupby(holiday_data, key=lambda x: x[0].strftime('%B').capitalize()):
+        grouped_holidays.append((month, list(group)))
+    
+    return render(request, 'tasks/holiday_list.html', {'holidays': grouped_holidays})

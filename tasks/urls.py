@@ -11,5 +11,7 @@ urlpatterns = [
     path('task/<int:task_id>/start/', views.start_task, name='start_task'),
     path('task/<int:task_id>/complete/', views.complete_task, name='complete_task'),
     path('tarefas/', views.task_list, name='task_list'),
+    # Feriados
     path('api/feriados/', views.holiday_api, name='holiday_api'),
+    path('feriados/', views.holiday_list, name='holiday_list'),
 ]
