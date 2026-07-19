@@ -95,20 +95,38 @@
 </div>
 
 <script>
-    // Relógio
+    // 1. Relógio
     function atualizarRelogio() {
-        document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR');
+        const relogio = document.getElementById('relogio');
+        if (relogio) {
+            relogio.innerText = new Date().toLocaleTimeString('pt-BR');
+        }
     }
     setInterval(atualizarRelogio, 1000);
     atualizarRelogio();
 
+    // 2. Calendário Completo
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicializa o calendário
-        new FullCalendar.Calendar(document.getElementById('calendar'), {
-            initialView: 'dayGridMonth', 
-            events: '/api/tasks/', 
-            height: '100%'
-        }).render();
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: '100%',
+            eventSources: [
+                {
+                    url: '/api/tasks/', // Busca suas tarefas
+                    color: '#3498db'
+                },
+                {
+                    url: '/api/feriados/', // Busca os feriados da nossa nova API
+                    display: 'background',
+                    backgroundColor: '#ff7675'
+                }
+            ]
+        });
+        
+        calendar.render();
     });
 </script>
 {% endblock %}

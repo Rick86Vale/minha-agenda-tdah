@@ -11,6 +11,8 @@ from .forms import TaskForm
 from datetime import timedelta 
 
 import datetime
+# biblioteca de feriados nacionais
+import holidays
 
 
 # 1. CRIAÇÃO DE TAREFAS
@@ -134,6 +136,7 @@ def task_delete(request, task_id):
         'next': next_url 
     })
 
+# 8. LISTA DE TAREFAS
 def task_list(request):
     tasks = Task.objects.all().order_by('due_date')
     
@@ -158,3 +161,25 @@ def task_list(request):
     page_obj = paginator.get_page(page_number)
     
     return render(request, 'tasks/task_list.html', {'tasks': page_obj})
+
+# 9. FERIADOS NACIONAIS
+def holiday_api(request):
+    br_holidays = holidays.Brazil(years=2026)
+    eventos = []
+    
+    for date, name in br_holidays.items():
+        eventos.append({
+            'title': name,
+            'start': date.strftime('%Y-%m-%d'),
+            'allDay': True,
+            'display': 'background', # Feriado fica como uma faixa no fundo
+            'backgroundColor': '#ff7675' # Vermelho claro
+        })
+    
+    eventos.append({
+    'title': name,
+    'start': date.strftime('%Y-%m-%d'),
+    'allDay': True,
+    'display': 'block',  # Mude de 'background' para 'block' para testar
+    'backgroundColor': '#ff0000' # Vermelho bem forte
+})
