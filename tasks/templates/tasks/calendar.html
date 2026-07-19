@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+<!-- templates/tasks/calendar.html -->
 {% block content %}
 <style>
     .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
@@ -21,7 +22,7 @@
     
     #calendar { height: 60vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     
-    /* Estilo do Alerta de Proximidade */
+    /* Estilo de Alerta (via Django) */
     .task-alert { border: 2px solid #ff4343 !important; background-color: #fff5f5; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 67, 67, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 67, 67, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 67, 67, 0); } }
     
@@ -51,9 +52,13 @@
             {% endfor %}
         </div>
         <div class="pagination">
-            {% if history_tasks.has_previous %}<a href="?page_left={{ history_tasks.previous_page_number }}" class="btn-pag">« Ant</a>{% endif %}
+            {% if history_tasks.has_previous %}
+                <a href="?page_left={{ history_tasks.previous_page_number }}{% if page_right %}&page_right={{ page_right }}{% endif %}" class="btn-pag">« Ant</a>
+            {% endif %}
             <span style="font-size: 0.8em; margin: 0 10px;">{{ history_tasks.number }} / {{ history_tasks.paginator.num_pages }}</span>
-            {% if history_tasks.has_next %}<a href="?page_left={{ history_tasks.next_page_number }}" class="btn-pag">Pró »</a>{% endif %}
+            {% if history_tasks.has_next %}
+                <a href="?page_left={{ history_tasks.next_page_number }}{% if page_right %}&page_right={{ page_right }}{% endif %}" class="btn-pag">Pró »</a>
+            {% endif %}
         </div>
     </div>
 
@@ -68,7 +73,6 @@
         <h3>Próximas</h3>
         <div class="tasks-list">
             {% for task in next_tasks %}
-                <!-- A classe task-alert é aplicada condicionalmente aqui -->
                 <div class="task-item {% if task.is_urgent %}task-alert{% endif %}" style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                     <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
                         <strong>{{ task.title }}</strong>
@@ -79,9 +83,13 @@
             {% endfor %}
         </div>
         <div class="pagination">
-            {% if next_tasks.has_previous %}<a href="?page_right={{ next_tasks.previous_page_number }}" class="btn-pag">« Ant</a>{% endif %}
+            {% if next_tasks.has_previous %}
+                <a href="?page_right={{ next_tasks.previous_page_number }}{% if page_left %}&page_left={{ page_left }}{% endif %}" class="btn-pag">« Ant</a>
+            {% endif %}
             <span style="font-size: 0.8em; margin: 0 10px;">{{ next_tasks.number }} / {{ next_tasks.paginator.num_pages }}</span>
-            {% if next_tasks.has_next %}<a href="?page_right={{ next_tasks.next_page_number }}" class="btn-pag">Pró »</a>{% endif %}
+            {% if next_tasks.has_next %}
+                <a href="?page_right={{ next_tasks.next_page_number }}{% if page_left %}&page_left={{ page_left }}{% endif %}" class="btn-pag">Pró »</a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -97,27 +105,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializa o calendário
         new FullCalendar.Calendar(document.getElementById('calendar'), {
-            initialView: 'dayGridMonth', events: '/api/tasks/', height: '100%'
+            initialView: 'dayGridMonth', 
+            events: '/api/tasks/', 
+            height: '100%'
         }).render();
-
-        // LÓGICA DE ALERTA
-        const agora = new Date().getTime();
-        const duasHorasEmMs = 2 * 60 * 60 * 1000;
-        
-        document.querySelectorAll('.task-item').forEach(t => {
-            const dataEl = t.querySelector('.due-date-value');
-            if (dataEl && dataEl.dataset.date) {
-                // Converte a string ISO para milissegundos
-                const dataTarefa = new Date(dataEl.dataset.date).getTime();
-                const diferenca = dataTarefa - agora;
-
-                console.log("Tarefa vencendo em (horas):", (diferenca / (1000 * 60 * 60)).toFixed(2));
-
-                if (diferenca > 0 && diferenca < duasHorasEmMs) {
-                    t.classList.add('task-alert');
-                }
-            }
-        });
     });
 </script>
 {% endblock %}

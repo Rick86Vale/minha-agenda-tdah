@@ -8,6 +8,8 @@ from django.db import models
 from .models import Task
 from .forms import TaskForm
 
+from datetime import timedelta 
+
 import datetime
 
 
@@ -25,32 +27,35 @@ def task_create(request):
 # 2. VISUALIZAÇÃO DO DASHBOARD/CALENDÁRIO
 def calendar_view(request):
     now = timezone.now()
+    data_limite = now - timedelta(days=40)
     
-    # Histórico
+    # 1. QuerySets
     past = Task.objects.filter(
-        models.Q(status='concluido') | models.Q(due_date__lt=now)
+        models.Q(status='concluido') | models.Q(due_date__lt=now),
+        due_date__gte=data_limite
     ).order_by('-due_date')
-    history_tasks = Paginator(past, 6).get_page(request.GET.get('page_left'))
     
-    # Próximas
     future = Task.objects.exclude(status='concluido').filter(
         due_date__gte=now
     ).order_by('start_time')
-    next_tasks = Paginator(future, 6).get_page(request.GET.get('page_right'))
     
-    # Paginação Esquerda (Histórico)
-    paginator_left = Paginator(past, 56)
+    # 2. Paginação Independente
+    # Paginador Esquerda (Histórico)
+    paginator_left = Paginator(past, 6)
     page_left = request.GET.get('page_left')
     history_tasks = paginator_left.get_page(page_left)
     
-    # Paginação Direita (Próximas)
+    # Paginador Direita (Próximas)
     paginator_right = Paginator(future, 6)
     page_right = request.GET.get('page_right')
     next_tasks = paginator_right.get_page(page_right)
     
     return render(request, 'tasks/calendar.html', {
         'next_tasks': next_tasks, 
-        'history_tasks': history_tasks
+        'history_tasks': history_tasks,
+        # Passamos a página atual para o template para ajudar a compor os links
+        'page_left': page_left,
+        'page_right': page_right
     })
 
 # 3. LÓGICA DE EXECUÇÃO DE TAREFAS
@@ -109,11 +114,25 @@ def task_update(request, task_id):
 # 7. EXCLUSÃO DE TAREFAS
 def task_delete(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    # Tenta pegar o 'next' da query string
+    next_url = request.GET.get('next') or request.POST.get('next')
+    
+    # LÓGICA DE SEGURANÇA:
+    # Se o next_url for a página da própria tarefa, descartamos ele 
+    # para evitar o erro 404 pós-exclusão.
+    if next_url and f'/task/{task_id}/' in next_url:
+        next_url = 'calendar'
+
     if request.method == 'POST':
         task.delete()
-        return redirect('calendar')
-    return render(request, 'tasks/task_confirm_delete.html', {'task': task})
-
+        # Se next_url for um nome de view (ex: 'calendar'), o redirect resolve.
+        # Se for uma URL (ex: '/lista/'), o redirect também resolve.
+        return redirect(next_url if next_url else 'calendar')
+    
+    return render(request, 'tasks/task_confirm_delete.html', {
+        'task': task,
+        'next': next_url 
+    })
 
 def task_list(request):
     tasks = Task.objects.all().order_by('due_date')

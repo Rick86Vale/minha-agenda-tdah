@@ -1,3 +1,4 @@
+<!-- templates/tasks/task_detail.html -->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -73,7 +74,7 @@
     <div class="actions" style="border-top: 1px solid #f4f4f4; padding-top: 20px;">
         <a href="{% url 'calendar' %}" class="btn btn-back">Voltar</a>
         <a href="{% url 'task_update' task.id %}" class="btn btn-primary">Editar</a>
-        <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Excluir</a>
+        <a href="{% url 'task_delete' task.id %}?next={{ request.get_full_path|urlencode }}" class="btn btn-danger">Excluir</a>
     </div>
 </div>
 {% endblock %}

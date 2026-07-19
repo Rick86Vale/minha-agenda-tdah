@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+<!-- templates/tasks/task_confirm_delete.html -->
 {% block content %}
 <style>
     .delete-container {
@@ -45,11 +46,16 @@
     <p>Você tem certeza que deseja excluir a tarefa <strong>"{{ task.title }}"</strong>?</p>
     
     <form method="post">
-        {% csrf_token %}
-        <div class="actions">
-            <button type="submit">Sim, excluir</button>
-            <a href="{% url 'task_detail' task.id %}" class="cancel-link">Cancelar</a>
-        </div>
-    </form>
+    {% csrf_token %}
+    <!-- Adiciona este campo oculto para segurar a URL de retorno -->
+    {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+    
+    <div class="actions">
+        <button type="submit">Sim, excluir</button>
+        <a href="{{ next|default:'/calendar/' }}" class="cancel-link">Cancelar</a>
+    </div>
+</form>
 </div>
 {% endblock %}
