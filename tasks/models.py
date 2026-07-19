@@ -52,3 +52,10 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+class LocalHoliday(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Nome do Feriado")
+    date = models.DateField(verbose_name="Data")
+
+    def __str__(self):
+        return self.name

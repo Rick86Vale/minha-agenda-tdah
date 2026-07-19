@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .crud-container { max-width: 500px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    h2 { color: #333; margin-bottom: 25px; text-align: center; }
+    
+    /* Estilo do formulário */
+    form p { margin-bottom: 15px; }
+    form input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    .btn-save { width: 100%; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn-save:hover { background: #219150; }
+
+    /* Estilo da lista */
+    ul { list-style: none; padding: 0; margin-top: 30px; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+    .delete-link { color: #e74c3c; font-size: 0.85em; text-decoration: none; font-weight: bold; }
+    .delete-link:hover { text-decoration: underline; }
+</style>
+
+<div class="crud-container">
+    <h2>Gerenciar Feriados Locais</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-save">Salvar Feriado</button>
+    </form>
+
+    <ul>
+        {% for h in holidays %}
+        <li>
+            <span><strong>{{ h.name }}</strong> ({{ h.date|date:"d/m" }})</span>
+            <a href="{% url 'holiday_delete' h.id %}" class="delete-link" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'holiday_list' %}" style="text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 0.9em;">
+            ← Voltar para Lista
+        </a>
+    </div>
+</div>
+{% endblock %}

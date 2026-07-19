@@ -3,6 +3,7 @@
 <!-- templates/tasks/calendar.html -->
 {% block content %}
 <style>
+    /* --- ESTRUTURA DO DASHBOARD --- */
     .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
     
     .box { 
@@ -14,7 +15,8 @@
     .tasks-list { flex-grow: 1; overflow-y: auto; }
     
     .center-column { display: flex; flex-direction: column; gap: 10px; }
-    
+
+    /* --- ELEMENTOS DE TEMPO E CALENDÁRIO --- */
     #relogio { 
         font-family: monospace; font-size: 1.8em; color: #10ac84; text-align: center; 
         padding: 15px; background: #000; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
@@ -22,12 +24,15 @@
     
     #calendar { height: 60vh; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     
-    /* Estilo de Alerta (via Django) */
+    /* --- ANIMAÇÕES E ALERTAS --- */
     .task-alert { border: 2px solid #ff4343 !important; background-color: #fff5f5; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 67, 67, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 67, 67, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 67, 67, 0); } }
     
+    /* --- PAGINAÇÃO E BOTÕES --- */
     .pagination { margin-top: auto; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
     .btn-pag { padding: 5px 12px; background: #3498db; color: white; border-radius: 5px; text-decoration: none; font-size: 0.8em; font-weight: bold; }
+    
+    /* --- STATUS DE TAREFAS (BADGES) --- */
     .status-badge { font-size: 0.8em; padding: 2px 8px; border-radius: 4px; color: white; display: inline-block; font-weight: bold; }
     .bg-nao_iniciado { background-color: #95a5a6; }
     .bg-iniciado      { background-color: #3498db; }

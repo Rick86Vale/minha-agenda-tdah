@@ -2,16 +2,66 @@
 
 {% block content %}
 <style>
-    .list-container { max-width: 600px; margin: 40px auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .list-container { 
+        max-width: 600px; 
+        margin: 40px auto; 
+        background: #fff; 
+        padding: 30px; 
+        border-radius: 16px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+    }
+    .header-actions { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 25px; 
+    }
+    .btn-crud { 
+        background-color: #f1c40f; 
+        color: #333; 
+        padding: 8px 16px; 
+        border-radius: 8px; 
+        text-decoration: none; 
+        font-weight: 600; 
+        font-size: 0.85em;
+        transition: background 0.3s;
+    }
+    .btn-crud:hover { background-color: #d4ac0d; }
+    
     .month-section { margin-top: 25px; }
-    .month-title { color: #3498db; font-size: 1.2em; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-bottom: 10px; }
-    .holiday-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
-    .icon { font-size: 1.5em; margin-right: 15px; }
-    .date-text { font-family: monospace; font-weight: bold; width: 80px; }
+    .month-title { 
+        color: #3498db; 
+        font-size: 1.1em; 
+        font-weight: bold;
+        border-bottom: 2px solid #3498db; 
+        padding-bottom: 5px; 
+        margin-bottom: 15px; 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .holiday-row { 
+        display: flex; 
+        align-items: center; 
+        padding: 10px; 
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .holiday-row:hover { background-color: #f8f9fa; }
+    .icon { font-size: 1.4em; margin-right: 15px; }
+    .date-text { 
+        font-family: 'Courier New', monospace; 
+        font-weight: bold; 
+        color: #555; 
+        width: 60px; 
+    }
+    .icon-local { background: #ffeaa7; padding: 2px; border-radius: 4px; }
 </style>
 
 <div class="list-container">
-    <h2>🗓️ Feriados 2026</h2>
+    <div class="header-actions">
+        <h2>🗓️ Feriados 2026</h2>
+        <a href="{% url 'holiday_crud' %}" class="btn-crud">+ Gerenciar Locais</a>
+    </div>
 
     {% for month, month_holidays in holidays %}
         <div class="month-section">
@@ -19,17 +69,37 @@
             {% for date, name in month_holidays %}
                 <div class="holiday-row">
                     <span class="icon">
-                        {% if "Confraternização" in name %}🎉{% elif "Carnaval" in name %}🎭{% elif "Independência" in name %}🇧🇷{% elif "Natal" in name %}🎄{% else %}📅{% endif %}
+                        {% if name in local_holiday_names %}📍
+                        {% elif "Confraternização" in name or "Ano Novo" in name %}🎉
+                        {% elif "Carnaval" in name or "Cinzas" in name %}🎭
+                        {% elif "Paixão" in name or "Sexta-Feira Santa" in name %}✝️
+                        {% elif "Páscoa" in name %}🐇
+                        {% elif "Tiradentes" in name %}⚔️
+                        {% elif "Trabalho" in name %}👷
+                        {% elif "Corpus Christi" in name %}🙏
+                        {% elif "Independência" in name %}🇧🇷
+                        {% elif "Nossa Senhora" in name or "Aparecida" in name %}⛪
+                        {% elif "Finados" in name %}🕯️
+                        {% elif "Proclamação" in name %}📜
+                        {% elif "Natal" in name %}🎄
+                        {% else %}📅{% endif %}
                     </span>
                     <span class="date-text">{{ date|date:"d/m" }}</span>
-                    <span>{{ name }}</span>
+                    <span>
+                        {{ name }}
+                        {% if name in local_holiday_names %}
+                            <small style="background:#ffeaa7; color: #856404; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; font-weight: bold;">LOCAL</small>
+                        {% endif %}
+                    </span>
                 </div>
             {% endfor %}
         </div>
     {% endfor %}
 
-    <div style="margin-top: 30px; text-align: center;">
-        <a href="{% url 'calendar' %}" style="text-decoration: none; color: #3498db; font-weight: bold;">← Voltar ao Calendário</a>
+    <div style="margin-top: 40px; text-align: center;">
+        <a href="{% url 'calendar' %}" style="text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 0.9em;">
+            ← Voltar ao Calendário
+        </a>
     </div>
 </div>
 {% endblock %}

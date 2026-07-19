@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db import models
-from .models import Task
+from .models import Task, LocalHoliday
 from .forms import TaskForm
 
 from datetime import timedelta 
@@ -15,6 +15,8 @@ import datetime
 import holidays
 from itertools import groupby
 from operator import itemgetter
+from .forms import LocalHolidayForm 
+from itertools import groupby
 
 # 1. CRIAÇÃO DE TAREFAS
 def task_create(request):
@@ -165,29 +167,59 @@ def task_list(request):
 
 # 9. FERIADOS NACIONAIS
 def holiday_api(request):
+    # 1. Nacionais
     br_holidays = holidays.Brazil(years=2026)
-    eventos = []
+    eventos = [{'title': name, 'start': date.strftime('%Y-%m-%d'), 'display': 'background', 'backgroundColor': '#ff7675'} 
+               for date, name in br_holidays.items()]
     
-    for date, name in br_holidays.items():
+    # 2. Locais (do seu novo modelo)
+    locais = LocalHoliday.objects.all()
+    for h in locais:
         eventos.append({
-            'title': name,
-            'start': date.strftime('%Y-%m-%d'),
-            'allDay': True,
-            'display': 'background', # Feriado como faixa de fundo
-            'backgroundColor': '#ff7675'
+            'title': h.name,
+            'start': h.date.strftime('%Y-%m-%d'),
+            'display': 'background',
+            'backgroundColor': '#ffeaa7' # Cor diferente para feriado local
         })
     
     return JsonResponse(eventos, safe=False)
 
+
+
 def holiday_list(request):
+    # 1. Feriados Nacionais
     br_holidays = holidays.Brazil(years=2026)
-    # Lista de tuplas (data, nome)
+    
+    # 2. Feriados Locais (convertendo para o mesmo formato do br_holidays)
+    local_holidays = LocalHoliday.objects.all()
+    # Adicionamos os locais ao dicionário de feriados
+    for h in local_holidays:
+        br_holidays[h.date] = h.name
+        
+    # Ordena tudo por data
     holiday_data = sorted(br_holidays.items())
     
-    # Agrupa por mês (usando o mês da data como chave)
-    # A função lambda extrai o mês da data
+    # Agrupa por mês
     grouped_holidays = []
     for month, group in groupby(holiday_data, key=lambda x: x[0].strftime('%B').capitalize()):
         grouped_holidays.append((month, list(group)))
     
     return render(request, 'tasks/holiday_list.html', {'holidays': grouped_holidays})
+
+# Feriados Locais
+def holiday_crud(request):
+    holidays = LocalHoliday.objects.all().order_by('date')
+    if request.method == 'POST':
+        form = LocalHolidayForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('holiday_crud')
+    else:
+        form = LocalHolidayForm()
+    return render(request, 'tasks/holiday_crud.html', {'holidays': holidays, 'form': form})
+
+def holiday_delete(request, holiday_id):
+    holiday = get_object_or_404(LocalHoliday, id=holiday_id)
+    holiday.delete()
+    return redirect('holiday_crud')
+

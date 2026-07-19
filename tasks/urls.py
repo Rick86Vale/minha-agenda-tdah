@@ -14,4 +14,6 @@ urlpatterns = [
     # Feriados
     path('api/feriados/', views.holiday_api, name='holiday_api'),
     path('feriados/', views.holiday_list, name='holiday_list'),
+    path('feriados/crud/', views.holiday_crud, name='holiday_crud'),
+    path('feriados/excluir/<int:holiday_id>/', views.holiday_delete, name='holiday_delete'),
 ]
