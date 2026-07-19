@@ -39,8 +39,17 @@ class Task(models.Model):
 
     def is_upcoming(self):
         now = timezone.now()
-        # Tarefa é considerada "próxima" se começa em até 30 minutos
         return self.start_time > now and self.start_time <= (now + timezone.timedelta(minutes=30))
+
+    def is_urgent(self):
+        """
+        Retorna True se a tarefa vence nas próximas 2 horas 
+        e não estiver concluída ou já atrasada.
+        """
+        now = timezone.now()
+        # Verifica se: não está concluída, ainda não passou do prazo, 
+        # mas está dentro da janela de 2 horas para vencer.
+        return self.status != 'concluido' and now < self.due_date and now >= (self.due_date - timezone.timedelta(hours=2))
 
     def __str__(self):
         return self.title

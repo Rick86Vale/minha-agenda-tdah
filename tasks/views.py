@@ -8,6 +8,8 @@ from django.db import models
 from .models import Task
 from .forms import TaskForm
 
+import datetime
+
 
 # 1. CRIAÇÃO DE TAREFAS
 def task_create(request):
@@ -55,16 +57,16 @@ def calendar_view(request):
 @require_POST
 def start_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    task.status = 'iniciado'
+    task.status = 'iniciado' 
     task.save()
-    return redirect('task_detail', task_id=task_id) 
+    return redirect('task_detail', task_id=task.id)
 
 @require_POST
 def complete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     task.status = 'concluido'
     task.save()
-    return redirect('calendar')
+    return redirect('c  ndar')
 
 # 4. API PARA O FULLCALENDAR
 def task_data(request):
@@ -111,3 +113,29 @@ def task_delete(request, task_id):
         task.delete()
         return redirect('calendar')
     return render(request, 'tasks/task_confirm_delete.html', {'task': task})
+
+
+def task_list(request):
+    tasks = Task.objects.all().order_by('due_date')
+    
+    # Filtros
+    status_filter = request.GET.get('status')
+    month_filter = request.GET.get('month')
+    urgent_filter = request.GET.get('urgent')
+    
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+    
+    if month_filter:
+        tasks = tasks.filter(due_date__month=month_filter)
+        
+    if urgent_filter == 'true':
+        # Filtramos em Python, já que is_urgent é um método do modelo
+        tasks = [t for t in tasks if t.is_urgent()]
+        
+    # Paginação: 10 tarefas por página
+    paginator = Paginator(tasks, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'tasks/task_list.html', {'tasks': page_obj})

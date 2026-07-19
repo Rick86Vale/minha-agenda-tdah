@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .list-container { max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .header-list { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    
+    /* Filtros e Paginação */
+    .filters { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; display: flex; gap: 15px; align-items: center; }
+    .pagination { margin-top: 20px; text-align: center; }
+    .pagination a { padding: 8px 16px; background: #3498db; color: white; border-radius: 5px; text-decoration: none; margin: 0 5px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+    th { color: #888; font-size: 0.85em; text-transform: uppercase; }
+    
+    /* Estilo de Alerta */
+    .tr-alert { background-color: #fff5f5 !important; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: inset 0 0 0 0 rgba(255, 67, 67, 0.4); } 70% { box-shadow: inset 0 0 0 5px rgba(255, 67, 67, 0); } 100% { box-shadow: inset 0 0 0 0 rgba(255, 67, 67, 0); } }
+
+    .status-badge { font-size: 0.75em; padding: 4px 8px; border-radius: 6px; color: white; font-weight: bold; }
+    .bg-nao_iniciado { background-color: #95a5a6; }
+    .bg-iniciado      { background-color: #3498db; }
+    .bg-pendente      { background-color: #e67e22; }
+    .bg-concluido     { background-color: #10ac84; }
+    .bg-atrasado      { background-color: #ff4343; }
+
+    .btn-action { padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8em; }
+    .edit { background: #f1f1f1; color: #333; }
+    .new-btn { background: #10ac84; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+</style>
+
+<div class="list-container">
+    <div class="header-list">
+        <h2>Minhas Tarefas</h2>
+        <a href="{% url 'task_create' %}" class="new-btn">+ Nova Tarefa</a>
+    </div>
+
+    <!-- Barra de Filtros -->
+    <div class="filters">
+        <form method="GET" action="{% url 'task_list' %}" style="display: flex; gap: 15px; align-items: center;">
+            <label>Status:
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    <option value="nao_iniciado" {% if request.GET.status == 'nao_iniciado' %}selected{% endif %}>Não Iniciado</option>
+                    <option value="iniciado" {% if request.GET.status == 'iniciado' %}selected{% endif %}>Iniciado</option>
+                    <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                </select>
+            </label>
+            
+            <label>Mês:
+                <select name="month" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    {% for m in "123456789012"|make_list %}
+                        <option value="{{ forloop.counter }}" {% if request.GET.month == forloop.counter|stringformat:"s" %}selected{% endif %}>{{ forloop.counter }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <input type="checkbox" name="urgent" value="true" {% if request.GET.urgent == 'true' %}checked{% endif %} onchange="this.form.submit()">
+                ⚠️ Apenas Urgentes
+            </label>
+
+            <a href="{% url 'task_list' %}">Limpar</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tarefa</th>
+                <th>Prazo</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr class="{% if task.is_urgent %}tr-alert{% endif %}">
+                <td>
+                    <a href="{% url 'task_detail' task.id %}" style="text-decoration: none; color: inherit;">
+                        <strong>{{ task.title }}</strong>
+                    </a>
+                </td>
+                <td>{{ task.due_date|date:"d/m H:i" }}</td>
+                <td><span class="status-badge bg-{{ task.get_status }}">{{ task.get_status|title|cut:"_" }}</span></td>
+                <td>
+                    <a href="{% url 'task_detail' task.id %}" class="btn-action edit">Ver</a>
+                    <a href="{% url 'task_update' task.id %}" class="btn-action edit">Editar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #999;">Nenhuma tarefa encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    <div class="pagination">
+        {% if tasks.has_previous %}
+            <a href="?page={{ tasks.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.urgent %}&urgent=true{% endif %}">« Anterior</a>
+        {% endif %}
+        
+        <span>Página {{ tasks.number }} de {{ tasks.paginator.num_pages }}</span>
+        
+        {% if tasks.has_next %}
+            <a href="?page={{ tasks.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}{% if request.GET.urgent %}&urgent=true{% endif %}">Próxima »</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
